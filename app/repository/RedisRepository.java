@@ -1,6 +1,8 @@
 package repository;
 
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.ScoredValue;
+import io.lettuce.core.api.StatefulRedisConnection;
 import models.StatItem;
 import models.TopStatItem;
 import play.Logger;
@@ -12,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 @Singleton
 public class RedisRepository {
@@ -35,13 +38,27 @@ public class RedisRepository {
     }
 
     private CompletionStage<Boolean> incrHeroInTops(StatItem statItem) {
-        // TODO
+        StatefulRedisConnection<String, String> connection = redisClient.connect();
+
+        System.out.println("add heroes :  " + statItem.name);
+
+        connection.async().zincrby("topHeroes" , 1 , statItem.toJson().toString());
+
+
+        connection.close();
+
         return CompletableFuture.completedFuture(true);
     }
 
 
     private CompletionStage<Long> addHeroAsLastVisited(StatItem statItem) {
-        // TODO
+        StatefulRedisConnection<String, String> connection = redisClient.connect();
+
+        System.out.println("add top heroes :  " + statItem.name);
+
+
+
+
         return CompletableFuture.completedFuture(1L);
     }
 
@@ -54,8 +71,22 @@ public class RedisRepository {
 
     public CompletionStage<List<TopStatItem>> topHeroesVisited(int count) {
         logger.info("Retrieved tops heroes");
-        // TODO
-        List<TopStatItem> tops = Arrays.asList(new TopStatItem(StatItemSamples.MsMarvel(), 8L), new TopStatItem(StatItemSamples.Starlord(), 6L), new TopStatItem(StatItemSamples.SpiderMan(), 5L), new TopStatItem(StatItemSamples.BlackPanther(), 5L), new TopStatItem(StatItemSamples.Thanos(), 4L));
-        return CompletableFuture.completedFuture(tops);
+        StatefulRedisConnection<String, String> connection = redisClient.connect();
+
+        List<TopStatItem> list = connection.sync()
+                .zrevrangeWithScores("topHeroes", 0, count - 1  )
+                .stream()
+                .map( sc -> new TopStatItem(StatItem.fromJson(sc.getValue()), getScore(sc.getScore())))
+                .collect(Collectors.toList());
+
+        list = list.subList(0 , Math.min(5, list.size()));
+
+        connection.close();
+
+        return CompletableFuture.completedFuture(list);
+    }
+
+    private Long getScore(double score){
+        return (long)score;
     }
 }
