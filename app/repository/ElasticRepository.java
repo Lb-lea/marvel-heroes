@@ -34,16 +34,17 @@ public class ElasticRepository {
 
 
     public CompletionStage<PaginatedResults<SearchedHero>> searchHeroes(String input, int size, int page) {
+        String query = "{" +
+                "  \"query\": {\n" +
+                "    \"multi_match\" : {\n" +
+                "      \"query\" : \"" + input + "\",\n" +
+                "      \"fields\" : [ \"name^4\", \"aliases^3\", \"secretIdentities^3\", \"description^2\", \"partners^1\"] \n" +
+                "    }\n" +
+                "  }" +
+                "}";
 
         return wsClient.url(elasticConfiguration.uri + "/_search")
-                .post(Json.parse("{" +
-                        "  \"query\": {\n" +
-                        "    \"multi_match\" : {\n" +
-                        "      \"query\" : \"" + input + "\",\n" +
-                        "      \"fields\" : [ \"name^4\", \"aliases^3\", \"secretIdentities^3\", \"description^2\", \"partners^1\"] \n" +
-                        "    }\n" +
-                        "  }" +
-                        "}"))
+                .post(Json.parse(query))
                 .thenApply((WSResponse response) -> {
                     List<SearchedHero> heroes = new ArrayList<>();
                     response.asJson().get("hits").get("hits")
@@ -59,11 +60,18 @@ public class ElasticRepository {
 
     public CompletionStage<List<SearchedHero>> suggest(String input) {
         return CompletableFuture.completedFuture(Arrays.asList(SearchedHeroSamples.IronMan(), SearchedHeroSamples.MsMarvel(), SearchedHeroSamples.SpiderMan()));
-        // TODO
-        // return wsClient.url(elasticConfiguration.uri + "...")
-        //         .post(Json.parse("{ ... }"))
-        //         .thenApply(response -> {
-        //             return ...
-        //         });
+       /* String query = "";
+
+        return wsClient.url(elasticConfiguration.uri + "/_search")
+                .post(Json.parse(query))
+                .thenApply((WSResponse response) -> {
+                    List<SearchedHero> heroes = new ArrayList<>();
+                    response.asJson().get("hits").get("hits")
+                            .forEach(hero -> {
+                                heroes.add(SearchedHero.fromJson(hero.get("_source")));
+                            });
+
+                    return heroes;
+                });*/
     }
 }
