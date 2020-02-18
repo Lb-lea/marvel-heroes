@@ -40,23 +40,19 @@ public class RedisRepository {
     private CompletionStage<Boolean> incrHeroInTops(StatItem statItem) {
         StatefulRedisConnection<String, String> connection = redisClient.connect();
 
-        System.out.println("add heroes :  " + statItem.name);
+        System.out.println("add top heroes :  " + statItem.name);
 
-        connection.async().zincrby("topHeroes" , 1 , statItem.toJson().toString());
-
-
-        connection.close();
-
-        return CompletableFuture.completedFuture(true);
+        return connection.async().zincrby("topHeroes" , 1 , statItem.toJson().toString()).thenApply( res -> {
+            connection.close();
+            return true;
+        });
     }
 
 
     private CompletionStage<Long> addHeroAsLastVisited(StatItem statItem) {
         StatefulRedisConnection<String, String> connection = redisClient.connect();
 
-        System.out.println("add top heroes :  " + statItem.name);
-
-
+        System.out.println("add last visited heroes :  " + statItem.name);
 
 
         return CompletableFuture.completedFuture(1L);
@@ -73,20 +69,16 @@ public class RedisRepository {
         logger.info("Retrieved tops heroes");
         StatefulRedisConnection<String, String> connection = redisClient.connect();
 
-        List<TopStatItem> list = connection.sync()
+        CompletionStage<List<TopStatItem>> completionStage = connection
+                .async()
                 .zrevrangeWithScores("topHeroes", 0, count - 1  )
-                .stream()
-                .map( sc -> new TopStatItem(StatItem.fromJson(sc.getValue()), getScore(sc.getScore())))
-                .collect(Collectors.toList());
+                .thenApply(result ->{
+                    connection.close();
+                    return result.stream()
+                            .map( sc -> new TopStatItem(StatItem.fromJson(sc.getValue()), (long)sc.getScore()))
+                            .collect(Collectors.toList());
+                });
 
-        list = list.subList(0 , Math.min(5, list.size()));
-
-        connection.close();
-
-        return CompletableFuture.completedFuture(list);
-    }
-
-    private Long getScore(double score){
-        return (long)score;
+        return completionStage;
     }
 }
