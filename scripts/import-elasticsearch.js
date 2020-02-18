@@ -34,6 +34,7 @@ fs.createReadStream('all-heroes.csv')
         var hero = {
             "id": data["id"],
             "name": data["name"],
+            "gender": data["gender"],
             "imageUrl": data["imageUrl"],
             "description": data["description"],
             "secretIdentities": data["secretIdentities"],
