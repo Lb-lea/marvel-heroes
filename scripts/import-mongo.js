@@ -8,7 +8,7 @@ const dbName = "marvel";
 const collectionName = "heroes";
 
 const insertHeroes = (db, callback) => {
-    const collection = db.collection('Heroes');
+    const collection = db.collection(collectionName);
 
     const heroes = [];
     fs.createReadStream('all-heroes.csv')
