@@ -35,11 +35,12 @@ public class ElasticRepository {
 
     public CompletionStage<PaginatedResults<SearchedHero>> searchHeroes(String input, int size, int page) {
         if(input.isEmpty()){
-            //todo better fallback
-            input ="a";
+            input ="*";
         }
 
         String query = "{" +
+                "  \"size\": " + size + ",\n" +
+                "  \"from\": " + size * (page - 1) + ",\n" +
                 "  \"query\": {\n" +
                 "    \"query_string\" : {\n" +
                 "      \"query\" : \"" + input + "*\",\n" +
@@ -47,8 +48,8 @@ public class ElasticRepository {
                 "    }\n" +
                 "  }" +
                 "}";
-        //todo pagination
-        return wsClient.url(elasticConfiguration.uri + "/_search")
+      
+        return wsClient.url(elasticConfiguration.uri + "/heroes/_search")
                 .post(Json.parse(query))
                 .thenApply((WSResponse response) -> {
                     List<SearchedHero> heroes = new ArrayList<>();
@@ -58,8 +59,7 @@ public class ElasticRepository {
                             });
 
                     int total = response.asJson().get("hits").get("total").get("value").asInt();
-
-                    return new PaginatedResults<>(total, page, (int) Math.ceil(total/ size),heroes);
+                    return new PaginatedResults<>(total, page, Math.max(1, (int) Math.ceil((double) total / (double) size)),heroes);
                 });
     }
 
