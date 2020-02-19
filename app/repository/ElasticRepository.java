@@ -34,15 +34,20 @@ public class ElasticRepository {
 
 
     public CompletionStage<PaginatedResults<SearchedHero>> searchHeroes(String input, int size, int page) {
+        if(input.isEmpty()){
+            //todo better fallback
+            input ="a";
+        }
+
         String query = "{" +
                 "  \"query\": {\n" +
-                "    \"multi_match\" : {\n" +
-                "      \"query\" : \"" + input + "\",\n" +
+                "    \"query_string\" : {\n" +
+                "      \"query\" : \"" + input + "*\",\n" +
                 "      \"fields\" : [ \"name^4\", \"aliases^3\", \"secretIdentities^3\", \"description^2\", \"partners^1\"] \n" +
                 "    }\n" +
                 "  }" +
                 "}";
-
+        //todo pagination
         return wsClient.url(elasticConfiguration.uri + "/_search")
                 .post(Json.parse(query))
                 .thenApply((WSResponse response) -> {
