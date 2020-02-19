@@ -52,15 +52,22 @@ public class MongoDBRepository {
 
     public CompletionStage<List<YearAndUniverseStat>> countByYearAndUniverse() {
         //return CompletableFuture.completedFuture(new ArrayList<>());
-        List<Object> aggId = new BasicDBList();
-        aggId.add(new BasicDBObject("identity.universe", "$identity.universe"));
-        aggId.add(new BasicDBObject("identity.yearAppearance", "$identity.yearAppearance"));
-        Bson match = match(eq("identity.yearAppearance", "$ne"));
-        Bson group = group(aggId, sum("count", 1L));
-        Bson sort = sort(descending("identity.yearAppearance"));
 
-        //List<Document> pipeline = new ArrayList<>();
-        return ReactiveStreamsUtils.fromMultiPublisher(heroesCollection.aggregate(Arrays.asList(match, group, sort)))
+
+        String match = "{ \"$match\": {\"identity.yearAppearance\" : {\"$ne\": \"\"}}}";
+        String groupYear = "{ \"$group\": { \"_id\": {\"identityYearAppearance\" :\"$identity.yearAppearance\",\"identityUniverse\" :\"$identity.universe\"}, count: {$sum: 1}}}";
+        String groupUniv = "{\"$group\": {_id: \"$_id\", byUniverse: {$push: {universe: \"$_id.universe\", count: \"$count\"}}}}";
+        String sort =  "{\"$sort\": {\"_id.yearAppearance\": 1}}";
+
+
+        List<Document> pipeline = new ArrayList<>();
+
+        pipeline.add(Document.parse(match));
+        pipeline.add(Document.parse(groupYear));
+        pipeline.add(Document.parse(groupUniv));
+        pipeline.add(Document.parse(sort));
+
+        return ReactiveStreamsUtils.fromMultiPublisher(heroesCollection.aggregate(pipeline))
                 .thenApply(documents -> {
                     return documents.stream()
                                     .map(Document::toJson)
