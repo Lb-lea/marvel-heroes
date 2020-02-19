@@ -54,11 +54,10 @@ public class MongoDBRepository {
         //return CompletableFuture.completedFuture(new ArrayList<>());
 
 
-        String match = "{ \"$match\": {\"identity.yearAppearance\" : {\"$ne\": \"\"}}}";
-        String groupYear = "{ \"$group\": { \"_id\": {\"identityYearAppearance\" :\"$identity.yearAppearance\",\"identityUniverse\" :\"$identity.universe\"}, count: {$sum: 1}}}";
-        String groupUniv = "{\"$group\": {_id: \"$_id\", byUniverse: {$push: {universe: \"$_id.universe\", count: \"$count\"}}}}";
-        String sort =  "{\"$sort\": {\"_id.yearAppearance\": 1}}";
-
+        String match = "{ $match: {\"identity.yearAppearance\" : {\"$ne\": \"\"}}}";
+        String groupYear = "{ $group: { _id: { yearAppearance :\"$identity.yearAppearance\",universe :\"$identity.universe\"}, count: {$sum: 1}}}";
+        String groupUniv = "{$group: { _id: \"$_id\", byUniverse: {$push: {universe: \"$_id.universe\", count: \"$count\"}}}}";
+        String sort =  "{$sort: {\"_id.yearAppearance\": -1}}";
 
         List<Document> pipeline = new ArrayList<>();
 
