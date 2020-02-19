@@ -48,7 +48,7 @@ public class ElasticRepository {
                 "    }\n" +
                 "  }" +
                 "}";
-      
+
         return wsClient.url(elasticConfiguration.uri + "/heroes/_search")
                 .post(Json.parse(query))
                 .thenApply((WSResponse response) -> {
@@ -64,14 +64,15 @@ public class ElasticRepository {
     }
 
     public CompletionStage<List<SearchedHero>> suggest(String input) {
-        String query = "{\"suggest\":{\"hero-suggest\":{\"prefix\":"+input+",\"completion\":{\"field'\":\"suggest\"}}}}";
+        String query = "{\"suggest\":{\"hero-suggest\":{\"prefix\": \""+input+"\",\"completion\":{\"field\":\"suggest\"}}}}";
 
 
-        return wsClient.url(elasticConfiguration.uri + "/_search")
+        return wsClient.url(elasticConfiguration.uri + "/heroes/_search")
                 .post(Json.parse(query))
                 .thenApply((WSResponse response) -> {
                     List<SearchedHero> heroes = new ArrayList<>();
-                    response.asJson().get("hits").get("hits")
+
+                    response.asJson().get("suggest").get("hero-suggest").get(0).get("options")
                             .forEach(hero -> {
                                 heroes.add(SearchedHero.fromJson(hero.get("_source")));
                             });
