@@ -1,11 +1,13 @@
 package repository;
 
+import com.mongodb.client.model.Filters;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 import models.Hero;
 import models.ItemCount;
 import models.YearAndUniverseStat;
 import org.bson.Document;
+import play.libs.Json;
 import utils.HeroSamples;
 import utils.ReactiveStreamsUtils;
 
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 @Singleton
 public class MongoDBRepository {
@@ -29,8 +32,7 @@ public class MongoDBRepository {
 
 
     public CompletionStage<Optional<Hero>> heroById(String heroId) {
-        // TODO
-         String query = "{db.heroes.find({ id : " + heroId + "})}";
+         String query = "{ id : \"" + heroId + "\"}";
          Document document = Document.parse(query);
          return ReactiveStreamsUtils.fromSinglePublisher(heroesCollection.find(document).first())
                  .thenApply(result -> Optional.ofNullable(result).map(Document::toJson).map(Hero::fromJson));
@@ -62,19 +64,28 @@ public class MongoDBRepository {
 
 
     public CompletionStage<List<ItemCount>> topPowers(int top) {
-        return CompletableFuture.completedFuture(new ArrayList<>());
-        // TODO
-        // List<Document> pipeline = new ArrayList<>();
-        // return ReactiveStreamsUtils.fromMultiPublisher(heroesCollection.aggregate(pipeline))
-        //         .thenApply(documents -> {
-        //             return documents.stream()
-        //                     .map(Document::toJson)
-        //                     .map(Json::parse)
-        //                     .map(jsonNode -> {
-        //                         return new ItemCount(jsonNode.findPath("_id").asText(), jsonNode.findPath("count").asInt());
-        //                     })
-        //                     .collect(Collectors.toList());
-        //         });
+        String unwindPower = "{ $unwind: \"$powers\"}";
+        String regroupByPower = "{ $group: { _id: \"$powers\", count: {$sum: 1}}}";
+        String sortByPower = "{ $sort:  {count: -1}}";
+        String getTop = "{ $limit: "+ top + "}";
+
+        List<Document> pipeline = new ArrayList<>();
+
+        pipeline.add(Document.parse(unwindPower));
+        pipeline.add(Document.parse(regroupByPower));
+        pipeline.add(Document.parse(sortByPower));
+        pipeline.add(Document.parse(getTop));
+
+         return ReactiveStreamsUtils.fromMultiPublisher(heroesCollection.aggregate(pipeline))
+                 .thenApply(documents -> {
+                     return documents.stream()
+                             .map(Document::toJson)
+                             .map(Json::parse)
+                             .map(jsonNode -> {
+                                 return new ItemCount(jsonNode.findPath("_id").asText(), jsonNode.findPath("count").asInt());
+                             })
+                             .collect(Collectors.toList());
+                 });
     }
 
     public CompletionStage<List<ItemCount>> byUniverse() {
