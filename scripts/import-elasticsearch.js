@@ -9,7 +9,7 @@ const heroesIndexName = 'heroes'
 
 function createBulkInsertQuery(heroes) {
     const body = heroes.reduce((acc, hero) => {
-        const { id, ...params } = hero;
+        const { object_id, ...params } = hero;
         acc.push({ index: { _index: heroesIndexName, _id: hero.id } })
         acc.push(params)
         return acc
