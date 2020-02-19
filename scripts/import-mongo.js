@@ -7,6 +7,14 @@ var mongoUrl = "mongodb://localhost:27017";
 const dbName = "marvel";
 const collectionName = "heroes";
 
+/**
+ * Make an array out ou a string.
+ * @param {*} stringList
+ */
+function splitArrays(stringList) {
+    return stringList === '' ? [] : stringList.split(",")
+}
+
 const insertHeroes = (db, callback) => {
     const collection = db.collection(collectionName);
 
@@ -22,31 +30,37 @@ const insertHeroes = (db, callback) => {
                 "imageUrl": data["imageUrl"],
                 "backgroundImageUrl": data["backgroundImageUrl"],
                 "externalLink": data["externalLink"],
-                "secretIdentities": data["secretIdentities"],
-                "birthPlace": data["birthPlace"],
-                "occupation": data["occupation"],
-                "aliases": data["aliases"],
-                "alignment": data["alignment"],
-                "firstAppearance": data["firstAppearance"],
-                "yearAppearance": new Date(data["yearAppearance"]),
-                "universe": data["universe"],
-                "gender": data["gender"],
-                "race": data["race"],
-                "type": data["type"],
-                "height": data["height"],
-                "weight": data["weight"],
-                "eyeColor": data["eyeColor"],
-                "hairColor": data["hairColor"],
-                "teams": data["teams"],
-                "powers": data["powers"],
-                "partners": data["partners"],
-                "intelligence": data["intelligence"],
-                "strength": data["strength"],
-                "speed": data["speed"],
-                "durability": data["durability"],
-                "power": data["power"],
-                "combat": data["combat"],
-                "creators": data["creators"]
+                "identity": {
+                    "secretIdentities": splitArrays(data["secretIdentities"]),
+                    "birthPlace": data["birthPlace"],
+                    "occupation": data["occupation"],
+                    "aliases": splitArrays(data["aliases"]),
+                    "alignment": data["alignment"],
+                    "firstAppearance": data["firstAppearance"],
+                    "yearAppearance": new Date(data["yearAppearance"]),
+                    "universe": data["universe"]
+                },
+                "apperence": {
+                    "gender": data["gender"],
+                    "race": data["race"],
+                    "type": data["type"],
+                    "height": data["height"],
+                    "weight": data["weight"],
+                    "eyeColor": data["eyeColor"],
+                    "hairColor": data["hairColor"]
+                },
+                "teams": splitArrays(data["teams"]),
+                "powers": splitArrays(data["powers"]),
+                "partners": splitArrays(data["partners"]),
+                "skills": {
+                    "intelligence": data["intelligence"],
+                    "strength": data["strength"],
+                    "speed": data["speed"],
+                    "durability": data["durability"],
+                    "power": data["power"],
+                    "combat": data["combat"]
+                },
+                "creators": splitArrays(data["creators"])
             });
         })
 
