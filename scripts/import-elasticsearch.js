@@ -61,11 +61,11 @@ async function run() {
                 "gender": data["gender"],
                 "imageUrl": data["imageUrl"],
                 "description": data["description"],
-                "secretIdentities": splitArrays(data["secretIdentities"]),
-                "aliases": splitArrays(data["aliases"]),
-                "universe": splitArrays(data["universe"]),
-                "teams": splitArrays(data["teams"]),
-                "partners": splitArrays(data["partners"]),
+                "secretIdentities": data["secretIdentities"],
+                "aliases": data["aliases"],
+                "universe": data["universe"],
+                "teams": data["teams"],
+                "partners": data["partners"],
                 "suggest":
                     [
                         {
