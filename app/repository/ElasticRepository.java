@@ -59,8 +59,8 @@ public class ElasticRepository {
     }
 
     public CompletionStage<List<SearchedHero>> suggest(String input) {
-        //return CompletableFuture.completedFuture(Arrays.asList(SearchedHeroSamples.IronMan(), SearchedHeroSamples.MsMarvel(), SearchedHeroSamples.SpiderMan()));
         String query = "{\"suggest\":{\"hero-suggest\":{\"prefix\":"+input+",\"completion\":{\"field'\":\"suggest\"}}}}";
+
 
         return wsClient.url(elasticConfiguration.uri + "/_search")
                 .post(Json.parse(query))

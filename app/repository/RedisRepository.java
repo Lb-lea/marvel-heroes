@@ -1,28 +1,27 @@
 package repository;
 
 import io.lettuce.core.RedisClient;
-import io.lettuce.core.ScoredValue;
 import io.lettuce.core.api.StatefulRedisConnection;
 import models.StatItem;
 import models.TopStatItem;
 import play.Logger;
-import utils.StatItemSamples;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 @Singleton
 public class RedisRepository {
 
+    private static final String TOP_HEROES = "topHeroes";
+    private static final String LAST_VISITED_HEREOS = "lastHereos";
     private static Logger.ALogger logger = Logger.of("RedisRepository");
 
 
     private final RedisClient redisClient;
+
 
     @Inject
     public RedisRepository(RedisClient redisClient) {
@@ -44,7 +43,7 @@ public class RedisRepository {
 
         return connection
                 .async()
-                .zincrby("topHeroes" , 1 , statItem.toJson().toString())
+                .zincrby(TOP_HEROES, 1 , statItem.toJson().toString())
                 .thenApply( res -> {
                     connection.close();
                     return true;
@@ -56,9 +55,12 @@ public class RedisRepository {
         StatefulRedisConnection<String, String> connection = redisClient.connect();
 
         System.out.println("add last visited heroes :  " + statItem.name);
+
+        connection.async().lrem(LAST_VISITED_HEREOS,0 , statItem.toJson().toString());
+
         return  connection
                 .async()
-                .lpush("lastHereos", statItem.toJson().toString())
+                .lpush(LAST_VISITED_HEREOS, statItem.toJson().toString())
                 .thenApply( res -> {
                     connection.close();
                     return res;
@@ -72,7 +74,7 @@ public class RedisRepository {
 
         return connection
                 .async()
-                .lrange("lastHereos", 0 , 5)
+                .lrange(LAST_VISITED_HEREOS, 0 , 5)
                 .thenApply(result -> {
                    connection.close();
                    return result
