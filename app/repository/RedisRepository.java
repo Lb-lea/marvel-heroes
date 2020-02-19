@@ -43,8 +43,8 @@ public class RedisRepository {
 
         return connection
                 .async()
-                .zincrby(TOP_HEROES, 1 , statItem.toJson().toString())
-                .thenApply( res -> {
+                .zincrby(TOP_HEROES, 1, statItem.toJson().toString())
+                .thenApply(res -> {
                     connection.close();
                     return true;
                 });
@@ -56,12 +56,12 @@ public class RedisRepository {
 
         System.out.println("add last visited heroes :  " + statItem.name);
 
-        connection.async().lrem(LAST_VISITED_HEREOS,0 , statItem.toJson().toString());
+        connection.async().lrem(LAST_VISITED_HEREOS, 0, statItem.toJson().toString());
 
-        return  connection
+        return connection
                 .async()
                 .lpush(LAST_VISITED_HEREOS, statItem.toJson().toString())
-                .thenApply( res -> {
+                .thenApply(res -> {
                     connection.close();
                     return res;
                 });
@@ -74,13 +74,13 @@ public class RedisRepository {
 
         return connection
                 .async()
-                .lrange(LAST_VISITED_HEREOS, 0 , 5)
+                .lrange(LAST_VISITED_HEREOS, 0, 5)
                 .thenApply(result -> {
-                   connection.close();
-                   return result
-                           .stream()
-                           .map(StatItem::fromJson)
-                           .collect(Collectors.toList());
+                    connection.close();
+                    return result
+                            .stream()
+                            .map(StatItem::fromJson)
+                            .collect(Collectors.toList());
                 });
     }
 
@@ -90,12 +90,12 @@ public class RedisRepository {
 
         return connection
                 .async()
-                .zrevrangeWithScores("topHeroes", 0, count - 1  )
-                .thenApply(result ->{
+                .zrevrangeWithScores("topHeroes", 0, count - 1)
+                .thenApply(result -> {
                     connection.close();
                     return result
                             .stream()
-                            .map( sc -> new TopStatItem(StatItem.fromJson(sc.getValue()), (long)sc.getScore()))
+                            .map(sc -> new TopStatItem(StatItem.fromJson(sc.getValue()), (long) sc.getScore()))
                             .collect(Collectors.toList());
                 });
 

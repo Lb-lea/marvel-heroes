@@ -55,7 +55,7 @@ const insertHeroes = (db, callback) => {
                 "skills": {
                     "intelligence": data["intelligence"] === "" ? 0 : parseFloat(data["intelligence"]),
                     "strength": data["strength"] === "" ? 0 : parseFloat(data["strength"]),
-                    "speed": data["speed"] === "" ? 0: parseFloat(data["speed"]),
+                    "speed": data["speed"] === "" ? 0 : parseFloat(data["speed"]),
                     "durability": data["durability"] === 0 ? "" : parseFloat(data["durability"]),
                     "power": data["power"] === "" ? 0 : parseFloat(data["power"]),
                     "combat": data["combat"] === "" ? 0 : parseFloat(data["combat"]),

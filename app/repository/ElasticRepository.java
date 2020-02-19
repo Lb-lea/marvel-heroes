@@ -34,8 +34,8 @@ public class ElasticRepository {
 
 
     public CompletionStage<PaginatedResults<SearchedHero>> searchHeroes(String input, int size, int page) {
-        if(input.isEmpty()){
-            input ="*";
+        if (input.isEmpty()) {
+            input = "*";
         }
 
         String query = "{" +
@@ -59,12 +59,12 @@ public class ElasticRepository {
                             });
 
                     int total = response.asJson().get("hits").get("total").get("value").asInt();
-                    return new PaginatedResults<>(total, page, Math.max(1, (int) Math.ceil((double) total / (double) size)),heroes);
+                    return new PaginatedResults<>(total, page, Math.max(1, (int) Math.ceil((double) total / (double) size)), heroes);
                 });
     }
 
     public CompletionStage<List<SearchedHero>> suggest(String input) {
-        String query = "{\"suggest\":{\"hero-suggest\":{\"prefix\": \""+input+"\",\"completion\":{\"field\":\"suggest\"}}}}";
+        String query = "{\"suggest\":{\"hero-suggest\":{\"prefix\": \"" + input + "\",\"completion\":{\"field\":\"suggest\"}}}}";
 
 
         return wsClient.url(elasticConfiguration.uri + "/heroes/_search")
