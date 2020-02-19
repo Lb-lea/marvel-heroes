@@ -37,10 +37,10 @@ const insertHeroes = (db, callback) => {
                     "aliases": splitArrays(data["aliases"]),
                     "alignment": data["alignment"],
                     "firstAppearance": data["firstAppearance"],
-                    "yearAppearance": new Date(data["yearAppearance"]),
+                    "yearAppearance": data["yearAppearance"],
                     "universe": data["universe"]
                 },
-                "apperence": {
+                "appearance": {
                     "gender": data["gender"],
                     "race": data["race"],
                     "type": data["type"],
