@@ -53,12 +53,12 @@ const insertHeroes = (db, callback) => {
                 "powers": splitArrays(data["powers"]),
                 "partners": splitArrays(data["partners"]),
                 "skills": {
-                    "intelligence": data["intelligence"],
-                    "strength": data["strength"],
-                    "speed": data["speed"],
-                    "durability": data["durability"],
-                    "power": data["power"],
-                    "combat": data["combat"]
+                    "intelligence": data["intelligence"] === "" ? 0 : parseFloat(data["intelligence"]),
+                    "strength": data["strength"] === "" ? 0 : parseFloat(data["strength"]),
+                    "speed": data["speed"] === "" ? 0: parseFloat(data["speed"]),
+                    "durability": data["durability"] === 0 ? "" : parseFloat(data["durability"]),
+                    "power": data["power"] === "" ? 0 : parseFloat(data["power"]),
+                    "combat": data["combat"] === "" ? 0 : parseFloat(data["combat"]),
                 },
                 "creators": splitArrays(data["creators"])
             });
